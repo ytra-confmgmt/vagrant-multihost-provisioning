@@ -1,0 +1,98 @@
+#!/bin/bash
+
+if getent passwd admin >/dev/null; then
+    printf 'The user %s exists\n' "$1"
+else
+    useradd  -mG wheel admin
+    echo smokey | passwd admin --stdin
+fi
+
+sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+
+sed -i "s/%wheel\tALL=(ALL)\tALL/# %wheel\tALL=(ALL)\tALL/g" /etc/sudoers
+sed -i "s/# %wheel\tALL=(ALL)\tNOPASSWD: ALL/%wheel\tALL=(ALL)\tNOPASSWD: ALL/g" /etc/sudoers
+
+service sshd restart
+
+if ! grep -w 'server00'; then
+cat <<EOF >> /etc/hosts
+192.168.100.200 server00.ytra.local server00
+192.168.100.201 server01.ytra.local server01
+192.168.100.202 server02.ytra.local server02
+192.168.100.203 server03.ytra.local server03
+192.168.100.204 server04.ytra.local server04
+192.168.100.205 server05.ytra.local server05
+192.168.100.206 server06.ytra.local server06
+EOF
+fi
+
+mkdir -p /home/admin/.ssh
+
+cat <<EOF > /home/admin/.ssh/config
+Host *
+    StrictHostKeyChecking no
+EOF
+
+cat <<EOF > /home/admin/.ssh/authorized_keys
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQChb3jMU0R5/rxmyFsTfikjNWLyGqrnIqvuO3tsYPo7JapqzFVLKrtuNRavh3ZMLn5PB2+rHWwBovbqtNPM8EN4qNL9Fmfl67LcGmP3JCTekyB2/plwMW7mnuiBAKfO1AGtgIU+hb9FrYwTGHoHTOeKUw34ouaY5JD5Ewbbg9iYp0nBPTOXmqxNh38847sQ3MsxD/AeOMCPiytcBpI4XLKwgum/+64lWTmvQxgQ1DCvSygzDI86pHaBqOm4E0Pj81dX6YUlGYKW3eKKlVYWTN1eF+MLhQd4TVNsdKXTHMZWFaQmPL99UBvOPxYMzM+PtRxGhfMkXVcJ4znUv/d24Ucjz4VChKMo9YlGfeaDOM9M50fMBrn9m0ZksXk3lvCEX6NQrR8UNhcS/OOApDFzlsY+1xuVSQKTdhezmnrxFJ0qf+C7w2B9z/udE24Eypv+Ib6Z391ygwLxiSZrt6xM62GzRovZl4/q/+1n+0SCj6YyjfzxDeipSI2L0cBmsJnNd20es6Zz6yXE9lzLGdM7Gwv9galrRZLeOA8uPQER9uCnh+dipNz2z2rHG8vllFPXQhiwwpHfXtQA0auh/sBMd3K+zCKXb/sXVvNjjhMlWeYWTdhGYFGH6Nx5QOqXMP1FBX8e6WtQy+a/iOapJoi9DUgLIHEV5lHphXn0jR45Ly9Psw== siebe.ytsma@ordina.nl
+EOF
+
+cat <<EOF > /home/admin/.ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQChb3jMU0R5/rxmyFsTfikjNWLyGqrnIqvuO3tsYPo7JapqzFVLKrtuNRavh3ZMLn5PB2+rHWwBovbqtNPM8EN4qNL9Fmfl67LcGmP3JCTekyB2/plwMW7mnuiBAKfO1AGtgIU+hb9FrYwTGHoHTOeKUw34ouaY5JD5Ewbbg9iYp0nBPTOXmqxNh38847sQ3MsxD/AeOMCPiytcBpI4XLKwgum/+64lWTmvQxgQ1DCvSygzDI86pHaBqOm4E0Pj81dX6YUlGYKW3eKKlVYWTN1eF+MLhQd4TVNsdKXTHMZWFaQmPL99UBvOPxYMzM+PtRxGhfMkXVcJ4znUv/d24Ucjz4VChKMo9YlGfeaDOM9M50fMBrn9m0ZksXk3lvCEX6NQrR8UNhcS/OOApDFzlsY+1xuVSQKTdhezmnrxFJ0qf+C7w2B9z/udE24Eypv+Ib6Z391ygwLxiSZrt6xM62GzRovZl4/q/+1n+0SCj6YyjfzxDeipSI2L0cBmsJnNd20es6Zz6yXE9lzLGdM7Gwv9galrRZLeOA8uPQER9uCnh+dipNz2z2rHG8vllFPXQhiwwpHfXtQA0auh/sBMd3K+zCKXb/sXVvNjjhMlWeYWTdhGYFGH6Nx5QOqXMP1FBX8e6WtQy+a/iOapJoi9DUgLIHEV5lHphXn0jR45Ly9Psw== siebe.ytsma@ordina.nl
+EOF
+
+cat <<EOF > /home/admin/.ssh/id_rsa
+-----BEGIN OPENSSH PRIVATE KEY-----
+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
+-----END OPENSSH PRIVATE KEY-----
+EOF
+
+chmod 700 /home/admin/.ssh
+chmod 600 /home/admin/.ssh/*
+chown -R admin. /home/admin/.ssh

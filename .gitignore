@@ -6,6 +6,7 @@
 
 # Hidden directory for VirtualBox additional disk files
 .virtualbox
+disks/*
 
 # Python development
 .ropeproject
